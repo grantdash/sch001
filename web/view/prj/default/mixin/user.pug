@@ -1,0 +1,7 @@
+//- module
+mixin user(opt)
+  - var url = (opt && opt.key ? `/s/avatar/${opt.key}.png` : '/assets/img/avatar.svg')
+  +scope().d-inline-block(style="width:2em")&attributes(attributes)
+    .aspect-ratio.ratio-1by1.rounded-circle.bg-cover(
+    ld="avatar",style=`background:#444 url(${url}) center center no-repeat`)
+

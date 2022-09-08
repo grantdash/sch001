@@ -1,0 +1,101 @@
+//- view
+extends /base.pug
+block vars
+  -
+    var ctrl = {navtop: {}};
+    var grp = {};
+    ctrl.navtop.placeholder = false;
+    var answer = ( ( prj.detail && prj.detail.answer ) ? prj.detail.answer : {} )
+    var purpose = (grp.form || {}).purpose || {};
+    var meta = {};
+    if(prj && prj.detail.info) {
+      meta.title = prj.detail.info.title;
+      meta.description = prj.detail.info.description;
+    }
+    if(prj.thumb) {
+      thumbPath = `/dash/org/${brd.org}/prj/${prj.slug}/upload/${prj.thumb}`;
+      thumb = `url(${thumbPath})`;
+      meta.thumbnail = `https://${domain}${thumbPath}`;
+    } else {
+      thumb = "none";
+    }
+
+block head
+  //-
+    include /modules/meta.pug
+    if pageInfo && pageInfo.cssUrl
+      +css(pageInfo.cssUrl)
+    else
+      +css("/dash/css/custom/index.css")
+  +css("/sch2021/view/grantdash.css")
+block body
+  include /modules/navtop.pug
+  .gd-prj-view.typeset.heading-contrast: .inner
+    .gd-prj-view-header.simple
+      .thumb(style=`background-image:${thumb}`)
+      .info
+        .brd
+          a(href=`/brd/${brd.slug}/list`) #{brd.name}
+          span &nbsp;/ 提案
+        .title
+          h2 #{prj.name}
+          .tags
+            if prj.tag
+              each t,$index in prj.tag
+                a(href=`/brd/${brd.slug}/list?tag=${t}`, style=`animation-delay:${$index * 0.1}s`)= t
+          .action
+            //-.btn.btn-outline-secondary.btn-sm.mr-2 追蹤 #[i.i-eye]
+            a.btn.btn-sm.mr-2.d-none(
+            ld="btn-edit",href=`/prj/${prj.slug}/edit`) 編輯 #[i.i-pen]
+            .btn.btn-sm.has-tips.manual(ld="btn-share")
+              | 分享 #[i.i-link]
+              .hover-tip.tip-sm.top 網址已拷貝
+
+        .user
+          .item
+            .label 提案人
+            .d-flex.align-items-center
+              .avatar(ld="avatar")
+              .name(ld="ownername")
+
+        .hr
+        .brief: each p in (prj.description || '').split('\n')
+          p #{p}
+
+  .gd-prj-view-body.simple.typeset.heading-contrast: .inner: .row
+    .col-md-2: .sticky.pt-2(style="top:60px")
+      .list-group
+        a.list-group-item.clickable.text-secondary(data-scrollto="#project-detail") 提案細節
+        //-a.list-group-item.clickable.text-secondary(href="#project-note") 線上共筆
+        a.list-group-item.clickable.text-secondary.d-none(
+        pd="stage-ctrl",data-name="comment-view",
+        data-scrollto="#project-discuss") 討論提問
+      //-.dropdown.my-4
+        .btn.btn-outline-secondary.dropdown-toggle.btn-block(data-toggle="dropdown") 修改紀錄
+        .dropdown-menu
+      a.btn.btn-primary.btn-block.text-white.my-4.d-none(pd="stage-ctrl",data-name="prj-new",
+      href=`/brd/${prj.brd}/prj/create`) 我要提案
+    .col-md-10
+      #project-detail
+      .block(style="font-size:1.25em"): .mb-4(ld-each="field")
+      //-.block: include /form/answer.pug
+      .d-none(pd="stage-ctrl",data-name="comment-view")
+        .caption
+          h3#project-discuss 討論提問
+          p 若您對這個提案有任何的問題或建議，都歡迎在這裡提出與提案人討論喔！
+        +scope("discuss").block
+          include discuss/index.pug
+
+block script
+  +register-locals
+  +script([
+    {name: "@plotdb/form"}
+  ])
+  script(type="module")
+    include:lsc fields.ls
+    include:lsc view.ls
+    include:lsc view-simple.ls
+  script(type="module")
+    include:lsc discuss/edit.ls
+  script(type="module")
+    include:lsc discuss/view.ls
